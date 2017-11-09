@@ -14,7 +14,7 @@ import homeassistant.helpers.config_validation as cv
 from homeassistant.util import Throttle
 from homeassistant.helpers.entity import Entity
 
-REQUIREMENTS = ['gearbest_parser==1.0.4.dev1']
+REQUIREMENTS = ['gearbest_parser==1.0.4']
 _LOGGER = logging.getLogger(__name__)
 
 CONF_ITEMS = 'items'
