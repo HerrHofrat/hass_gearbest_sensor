@@ -15,7 +15,8 @@ Configuration variables:
 
 - **currency** (*Required*): The currency in which the products should be tracked. Currently supported: USD, EUR, GBP, AUD, CAD, CHF, HKD, CNY, NZD, JPY, RUB, BRL, CLP, NOK, DKK, SEK, KRW, ILS, COP, MXN, PEN, THB, IDR, UAH, PLN, INR, BGN, HUF, RON, TRY, CZK, HRK, MAD, AED, SAR, ZAR, SGD, MYR, TWD, RSD, NGN - if the currency could not be found in the conversion rate list, USD will be used as default.
 - **items** (*Required*): List of products that should be tracked
-  * **url** (*Required*): The url of the product.
+  * **id** (*Option*): The id of the product.
+  * **url** (*Option*): The url of the product. Can be used instead of the id.
   * **name** (*Optional*): The name of the item. If not set, it is parsed from the website
   * **currency** (*Optional*): Overwrite the currency for the current item
 
@@ -30,4 +31,7 @@ sensor:
       - url: https://www.gearbest.com/3d-printers-3d-printer-kits/pp_779174.html?wid=21
         name: Creality CR-10 upgraded
         currency: USD
+      - id: 779174
+        name: Creality CR-10 upgraded #2
+        currency: EUR
 ```
