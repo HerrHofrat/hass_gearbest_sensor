@@ -14,7 +14,7 @@ import homeassistant.helpers.config_validation as cv
 from homeassistant.util import Throttle
 from homeassistant.helpers.entity import Entity
 
-REQUIREMENTS = ['gearbest_parser==1.0.3']
+REQUIREMENTS = ['gearbest_parser==1.0.4.dev1']
 _LOGGER = logging.getLogger(__name__)
 
 CONF_ITEMS = 'items'
@@ -24,7 +24,8 @@ ICON = 'mdi:coin'
 MIN_TIME_BETWEEN_UPDATES = timedelta(seconds=2*60*60) #2h * 60min * 60sec
 
 _ITEM_SCHEMA = vol.Schema({
-    vol.Required("url"): cv.string,
+    vol.Optional("url"): cv.string,
+    vol.Optional("id"): cv.string,
     vol.Optional("name"): cv.string,
     vol.Optional("currency"): cv.string
 })
@@ -46,20 +47,17 @@ def async_setup_platform(hass, config, async_add_devices, discovery_info=None):
     hass.loop.run_in_executor(None, _add_items, hass, config, async_add_devices)
 
 def _add_items(hass, config, async_add_devices):
-
-    from gearbest_parser import GearbestParser
-
     currency = config.get(CONF_CURRENCY)
 
     sensors = []
     items = config.get(CONF_ITEMS)
     for item in items:
-    	if GearbestParser.is_valid_url(item.get("url")):
-            sensor = GearbestSensor(hass,
-                                    item.get("url"),
-                                    item.get("currency", currency),
-                                    item.get("name", None))
-            sensors.append(sensor)
+        try:
+            sensor = GearbestSensor(hass, item, currency)
+            if sensor is not None:
+                sensors.append(sensor)
+        except AttributeError as exc:
+            _LOGGER.error(exc)
 
     async_add_devices(sensors)
 
@@ -67,16 +65,20 @@ def _add_items(hass, config, async_add_devices):
 class GearbestSensor(Entity):
     """Implementation of the sensor."""
 
-    def __init__(self, hass, url, currency, name):
+    def __init__(self, hass, item, currency):
         """Initialize the sensor."""
 
         from gearbest_parser import GearbestParser
 
         self._hass = hass
-        self._name = name
+        self._name = item.get("name", None)
         self._parser = GearbestParser()
         self._parser.update_conversion_list()
-        self._item = self._parser.load(url, currency)
+        self._item = self._parser.load(item.get("id", None),
+                                       item.get("url", None),
+                                       item.get("currency", currency))
+        if self._item is None:
+            raise AttributeError("id and url could not be resolved")
         self._item.update()
 
     @property
